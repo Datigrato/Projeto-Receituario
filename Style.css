@@ -66,3 +66,30 @@ button:hover {
 .hidden {
     display: none;
 }
+
+.mensagem-erro {
+    color: red;
+    font-size: 0.9em;
+    margin-top: 4px;
+}
+
+.erro {
+    border-color: red;
+}
+
+.hidden {
+    display: none;
+}
+
+.hidden {
+    display: none;
+}
+
+.erro {
+    border: 1px solid red;
+}
+
+.mensagem-erro {
+    color: red;
+    font-size: 0.9em;
+}
