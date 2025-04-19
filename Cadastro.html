@@ -19,11 +19,11 @@
         <div class="form-group">
             <label for="tipo">Você é:</label>
             <select id="tipo" onchange="exibirCampos()">
-        <option value="">-- Selecione --</option>
-        <option value="paciente">Paciente</option>
-        <option value="medico">Médico</option>
-        <option value="farmacia">Farmácia</option>
-      </select>
+          <option value="">-- Selecione --</option>
+          <option value="paciente">Paciente</option>
+          <option value="medico">Médico</option>
+          <option value="farmacia">Farmácia</option>
+        </select>
         </div>
 
         <form id="formCadastro">
@@ -39,11 +39,11 @@
                 <div class="form-group">
                     <label for="sexo">Sexo:</label>
                     <select id="sexo" name="sexo" required>
-            <option value="">-- Selecione --</option>
-            <option value="masculino">Masculino</option>
-            <option value="feminino">Feminino</option>
-            <option value="outro">Outro</option>
-          </select>
+              <option value="">-- Selecione --</option>
+              <option value="masculino">Masculino</option>
+              <option value="feminino">Feminino</option>
+              <option value="outro">Outro</option>
+            </select>
                 </div>
                 <div class="form-group" id="campoCPF">
                     <label for="cpf">CPF:</label>
@@ -104,6 +104,9 @@
             const cnpjInput = document.getElementById("cnpj");
             const erroCNPJ = document.getElementById("erroCNPJ");
 
+            const crmInput = document.getElementById("crm");
+            const erroCRM = document.getElementById("erroCRM");
+
             // CPF
             cpfInput.addEventListener("input", function() {
                 let clean = this.value.replace(/\D/g, "").slice(0, 11);
@@ -155,18 +158,15 @@
 
             function validarCNPJ(cnpj) {
                 if (!cnpj || cnpj.length !== 14 || /^(\d)\1{13}$/.test(cnpj)) return false;
-
                 let tamanho = 12,
                     numeros = cnpj.substring(0, tamanho),
                     digitos = cnpj.substring(tamanho);
                 let soma = 0,
                     pos = tamanho - 7;
-
                 for (let i = tamanho; i >= 1; i--) {
                     soma += parseInt(numeros.charAt(tamanho - i)) * pos--;
                     if (pos < 2) pos = 9;
                 }
-
                 let resultado = soma % 11 < 2 ? 0 : 11 - (soma % 11);
                 if (resultado !== parseInt(digitos.charAt(0))) return false;
 
@@ -174,26 +174,20 @@
                 numeros = cnpj.substring(0, tamanho);
                 soma = 0;
                 pos = tamanho - 7;
-
                 for (let i = tamanho; i >= 1; i--) {
                     soma += parseInt(numeros.charAt(tamanho - i)) * pos--;
                     if (pos < 2) pos = 9;
                 }
-
                 resultado = soma % 11 < 2 ? 0 : 11 - (soma % 11);
                 return resultado === parseInt(digitos.charAt(1));
             }
 
             // CRM
-            const crmInput = document.getElementById("crm");
-            const erroCRM = document.getElementById("erroCRM");
-
             crmInput.addEventListener("input", function() {
                 let value = this.value.replace(/[^a-zA-Z0-9]/g, "").toUpperCase().slice(0, 8);
                 let numero = value.slice(0, 6);
                 let estado = value.slice(6, 8);
                 this.value = numero + (estado ? "/" + estado : "");
-
                 validarCRMVisual(this.value);
             });
 
@@ -217,10 +211,34 @@
                 return cnpj.replace(/(\d{2})(\d{3})(\d{3})(\d{4})(\d{0,2})/, (_, p1, p2, p3, p4, p5) => `${p1}.${p2}.${p3}/${p4}-${p5}`);
             }
 
+            // Bloquear envio se inválido
+            document.getElementById("formCadastro").addEventListener("submit", function(event) {
+                const tipo = document.getElementById("tipo").value;
+                const cpfValido = validarCPF(cpfInput.value.replace(/\D/g, ""));
+                const cnpjValido = validarCNPJ(cnpjInput.value.replace(/\D/g, ""));
+                const crmValido = /^\d{6}\/[A-Z]{2}$/.test(crmInput.value);
+                let erro = false;
+
+                if (tipo === "paciente" || tipo === "medico") {
+                    if (!cpfValido) erro = true;
+                    if (tipo === "medico" && !crmValido) erro = true;
+                }
+
+                if (tipo === "farmacia" && !cnpjValido) {
+                    erro = true;
+                }
+
+                if (erro) {
+                    event.preventDefault();
+                    alert("Por favor, corrija os campos destacados antes de continuar.");
+                }
+            });
+
             // Exibir campos corretos ao carregar
             exibirCampos();
         });
     </script>
 </body>
+
 
 </html>
