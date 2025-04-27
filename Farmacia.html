@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Validação da Receita</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f0f2f5;
+            margin: 20px;
+        }
+        
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+        
+        h1 {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        
+        .pharmacy-info {
+            text-align: center;
+            margin-bottom: 20px;
+            font-size: 18px;
+        }
+        
+        .scanner {
+            margin-top: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        /* Estilo para o quadrado acima da área de escaneamento */
+        
+        .scanner-box {
+            width: 320px;
+            height: 240px;
+            border: 2px dashed #3498db;
+            margin-top: 20px;
+            position: relative;
+            background-color: #f0f2f5;
+        }
+        
+        .scanner canvas {
+            border: 1px solid #ddd;
+            margin-top: 20px;
+        }
+        
+        .message {
+            margin-top: 20px;
+            font-size: 18px;
+            text-align: center;
+        }
+        
+        .valid {
+            color: green;
+        }
+        
+        .invalid {
+            color: red;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <!-- Informações da farmácia -->
+        <div class="pharmacy-info">
+            <div><strong>FARMÁCIA A</strong></div>
+            <div><strong>CNPJ:</strong> 12.345.678/0001-90</div>
+        </div>
+
+        <h1>Validação da Receita</h1>
+
+        <!-- Quadrado acima da área de escaneamento -->
+        <div class="scanner-box">
+            <p style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); color: #3498db; font-weight: bold;">Escaneie o QR Code da receita</p>
+        </div>
+
+        <!-- Área de scanner -->
+        <div class="scanner">
+            <video id="video" width="320" height="240" autoplay></video>
+            <canvas id="canvas" style="display:none;"></canvas>
+        </div>
+
+        <div class="message">
+            <p id="status">Escaneie o QR Code da receita</p>
+        </div>
+    </div>
+
+    <!-- jsQR Library -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jsQR/1.4.0/jsQR.js"></script>
+
+    <script>
+        // Inicialização do scanner de QR Code
+        const videoElement = document.getElementById('video');
+        const canvasElement = document.getElementById('canvas');
+        const canvasContext = canvasElement.getContext('2d');
+        const statusElement = document.getElementById('status');
+
+        let scannerActive = false;
+
+        // Acessar a câmera do dispositivo
+        async function startScanner() {
+            const stream = await navigator.mediaDevices.getUserMedia({
+                video: {
+                    facingMode: 'environment'
+                }
+            });
+            videoElement.srcObject = stream;
+            videoElement.setAttribute("playsinline", true);
+            videoElement.play();
+
+            // Iniciar o loop de captura de frames
+            requestAnimationFrame(scanQRCode);
+        }
+
+        // Função para escanear o QR Code
+        function scanQRCode() {
+            if (scannerActive) {
+                // Desenhar o frame do vídeo no canvas
+                canvasContext.drawImage(videoElement, 0, 0, canvasElement.width, canvasElement.height);
+
+                // Obter a imagem do canvas e verificar o QR Code
+                const imageData = canvasContext.getImageData(0, 0, canvasElement.width, canvasElement.height);
+                const qrCode = jsQR(imageData.data, canvasElement.width, canvasElement.height);
+
+                if (qrCode) {
+                    // Se encontrar um QR Code, validar a receita
+                    validatePrescription(qrCode.data);
+                } else {
+                    requestAnimationFrame(scanQRCode);
+                }
+            }
+        }
+
+        // Função para validar a receita
+        function validatePrescription(qrData) {
+            // Simulação de dados da receita decodificada
+            const decodedData = JSON.parse(qrData); // O QR Code deve armazenar os dados como JSON
+
+            // Aqui, você pode fazer uma requisição para o backend para validar a receita
+            // Exemplo de validação com dados fictícios:
+            const receitaValida = (decodedData.medicamento && decodedData.dosagem); // Simulação de uma validação
+
+            if (receitaValida) {
+                statusElement.textContent = "Receita válida!";
+                statusElement.className = "message valid";
+            } else {
+                statusElement.textContent = "Receita inválida!";
+                statusElement.className = "message invalid";
+            }
+        }
+
+        // Iniciar o scanner quando a página for carregada
+        window.onload = () => {
+            scannerActive = true;
+            startScanner();
+        };
+
+        // Pausar o scanner quando a página for desativada
+        window.onbeforeunload = () => {
+            scannerActive = false;
+        };
+    </script>
+</body>
+
+</html>

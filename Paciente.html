@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Minhas Receitas</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f0f2f5;
+            margin: 20px;
+        }
+        
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+        
+        h1 {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        
+        .paciente-info {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding: 10px;
+            background: #f9f9f9;
+            border-radius: 5px;
+        }
+        
+        .paciente-info div {
+            font-size: 16px;
+        }
+        
+        .receita-header {
+            padding: 15px;
+            border-bottom: 1px solid #ddd;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: #f9f9f9;
+            border-radius: 5px;
+            margin-bottom: 10px;
+            transition: background 0.3s;
+        }
+        
+        .receita-header:hover {
+            background: #e6e6e6;
+        }
+        
+        .receita-header .toggle-icon {
+            transition: transform 0.3s;
+        }
+        
+        .receita-header.open .toggle-icon {
+            transform: rotate(180deg);
+        }
+        
+        .detalhes-receita {
+            display: none;
+            padding: 10px 15px;
+            background: #fafafa;
+            border-left: 3px solid #3498db;
+            margin-bottom: 10px;
+            border-radius: 5px;
+        }
+        
+        .controlado {
+            color: red;
+            font-weight: bold;
+        }
+        
+        .pdf-link {
+            text-decoration: none;
+            color: #3498db;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        
+        @media (max-width: 600px) {
+            .container {
+                padding: 15px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <h1>Minhas Receitas</h1>
+
+        <!-- Informações do paciente -->
+        <div class="paciente-info">
+            <div><strong>Paciente:</strong> João Silva</div>
+            <div><strong>CPF:</strong> 123.456.789-00</div>
+        </div>
+
+        <div id="listaReceitas"></div>
+    </div>
+
+    <!-- jsPDF Library -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
+    <script>
+        const {
+            jsPDF
+        } = window.jspdf;
+
+        const receitas = [{
+            medico: "Dr. João Silva",
+            medicamento: "Paracetamol",
+            dosagem: "500mg",
+            intervalo: "8 em 8 horas",
+            controlado: false,
+            data: "2025-04-27T15:00:00"
+        }, {
+            medico: "Dra. Maria Souza",
+            medicamento: "Clonazepam",
+            dosagem: "2mg",
+            intervalo: "12 em 12 horas",
+            controlado: true,
+            data: "2025-04-25T09:30:00"
+        }, {
+            medico: "Dr. Carlos Pereira",
+            medicamento: "Amoxicilina",
+            dosagem: "500mg",
+            intervalo: "8 em 8 horas",
+            controlado: false,
+            data: "2025-04-20T14:45:00"
+        }];
+
+        receitas.sort((a, b) => new Date(b.data) - new Date(a.data));
+
+        const listaReceitas = document.getElementById("listaReceitas");
+
+        receitas.forEach((receita) => {
+            const header = document.createElement("div");
+            header.className = "receita-header";
+            header.innerHTML = `
+        <div><strong>${receita.medico}</strong></div>
+        <div>${new Date(receita.data).toLocaleDateString("pt-BR")}</div>
+        <div class="toggle-icon">▼</div>
+      `;
+
+            const detalhes = document.createElement("div");
+            detalhes.className = "detalhes-receita";
+            detalhes.innerHTML = `
+        <p><strong>Medicamento:</strong> ${receita.medicamento} ${receita.controlado ? '<span class="controlado">(Controlado)</span>' : ''}</p>
+        <p><strong>Dosagem:</strong> ${receita.dosagem}</p>
+        <p><strong>Intervalo:</strong> ${receita.intervalo}</p>
+        <p><strong>Data da Receita:</strong> ${new Date(receita.data).toLocaleString("pt-BR")}</p>
+      `;
+
+            // Adicionar link para gerar PDF
+            const pdfLink = document.createElement("a");
+            pdfLink.href = "#";
+            pdfLink.classList.add("pdf-link");
+            pdfLink.innerHTML = "ReceitaPDF";
+            pdfLink.onclick = () => gerarPDF(receita);
+
+            // Adicionar link à header
+            header.appendChild(pdfLink);
+
+            header.addEventListener("click", () => {
+                const isOpen = header.classList.contains("open");
+                if (isOpen) {
+                    detalhes.style.display = "none";
+                    header.classList.remove("open");
+                } else {
+                    detalhes.style.display = "block";
+                    header.classList.add("open");
+                }
+            });
+
+            listaReceitas.appendChild(header);
+            listaReceitas.appendChild(detalhes);
+        });
+
+        function gerarPDF(receita) {
+            const doc = new jsPDF();
+
+            // Adicionar dados do paciente ao PDF
+            doc.text("Paciente: João Silva", 10, 10);
+            doc.text("CPF: 123.456.789-00", 10, 20);
+
+            // Adicionar nome do médico logo após os dados do paciente
+            doc.text(`Médico: ${receita.medico}`, 10, 30);
+
+            // Tag "Receita"
+            doc.text("Receita:", 10, 40);
+
+            // Detalhes da receita
+            doc.text(`Medicamento: ${receita.medicamento}`, 10, 50);
+            doc.text(`Dosagem: ${receita.dosagem}`, 10, 60);
+            doc.text(`Intervalo: ${receita.intervalo}`, 10, 70);
+            doc.text(`Data: ${new Date(receita.data).toLocaleString("pt-BR")}`, 10, 80);
+
+            // Gerar o PDF com o nome do medicamento
+            doc.save(`${receita.medicamento}_receita.pdf`);
+        }
+    </script>
+</body>
+
+</html>
