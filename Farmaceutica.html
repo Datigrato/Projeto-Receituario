@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Consumo de Dipirona por Estado</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 30px;
+        }
+        
+        canvas {
+            max-width: 800px;
+        }
+    </style>
+</head>
+
+<body>
+
+    <h1>Consumo de Dipirona por Estado (2025)</h1>
+
+    <canvas id="graficoDipirona"></canvas>
+
+    <script>
+        const ctx = document.getElementById('graficoDipirona').getContext('2d');
+        const graficoDipirona = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: [
+                    'São Paulo', 'Rio de Janeiro', 'Minas Gerais',
+                    'Bahia', 'Paraná', 'Rio Grande do Sul',
+                    'Pernambuco', 'Ceará', 'Pará', 'Goiás'
+                ],
+                datasets: [{
+                    label: 'Dipirona consumida (mil unidades)',
+                    data: [450, 300, 280, 200, 180, 170, 160, 150, 140, 130],
+                    backgroundColor: 'rgba(54, 162, 235, 0.7)',
+                    borderColor: 'rgba(54, 162, 235, 1)',
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        title: {
+                            display: true,
+                            text: 'Milhares de unidades'
+                        }
+                    },
+                    x: {
+                        title: {
+                            display: true,
+                            text: 'Estados'
+                        }
+                    }
+                },
+                plugins: {
+                    legend: {
+                        display: true,
+                        position: 'top'
+                    },
+                    tooltip: {
+                        enabled: true
+                    }
+                }
+            }
+        });
+    </script>
+
+</body>
+
+</html>
